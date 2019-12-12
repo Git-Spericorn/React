@@ -1,0 +1,82 @@
+import React from 'react';
+import {connect} from 'react-redux';
+import actions from '../action';
+
+class employeeList extends React.Component {
+
+    state={
+        employeeName:''
+    }
+
+    componentDidMount = async() => {
+        //listing employee data
+        await this.props.getEmployeeList();
+    }
+
+    onChange = (e) => {
+        const {target : {name,value}} = e;
+        //set employee details in state
+        this.setState({
+            [name]: value
+        })
+    }
+
+    onSubmit = async(e) => {
+        e.preventDefault();
+        const request = {
+            'name':this.state.employeeName,
+            'designation':this.state.designation
+        }
+        if(request.name && request.designation)
+            await this.props.addEmployee(request);
+        else
+            this.setState({error:'Enter all fields'})
+    }
+    
+    render(){
+        const {employeeReducer :{employeeList}} = this.props;
+        return(
+            <div>
+                <div>
+                    <h1>Add Employee</h1>
+                    <label>Name</label>
+                    <input 
+                        type='text'
+                        name='employeeName' 
+                        placeholder='Enter employee name'
+                        value={this.state.employeeName}
+                        onChange={(e)=>this.onChange(e)}
+                    />
+                    <label>Designation</label>
+                    <input 
+                        type='text'
+                        name='employeeDesignation' 
+                        placeholder='Enter employee designation'
+                        value={this.state.employeeDesignation}
+                        onChange={(e)=>this.onChange(e)}
+                    />
+                    <input type='submit' value='Submit' onClick={(e) => this.onSubmit(e)}/>
+                    <div className='text-danger'>{this.state.error}</div>
+                </div>
+                <div>
+                    <h1>Employee List</h1>
+                    {/* map to listing employee data */}
+                    {employeeList.map((employee,i)=>{
+                    return <React>
+                        <p key={i}>{employee.employeeName}</p>
+                        <p>{employee.employeeDesignation}</p>
+                    </React>
+                        })
+                    }
+                </div>
+            </div>
+        )
+    }
+}
+
+function mapStateToProps(state) {
+    const {employeeReducer} = state;
+    return {employeeReducer}
+}
+
+export default connect(mapStateToProps, {...actions})(employeeList);
