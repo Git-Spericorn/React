@@ -1,0 +1,77 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import actions from '../action';
+
+class SignIn extends React.Component {
+    state = {
+        emailAddress: '',
+        password: ''
+    }
+
+    handleChange(event) {
+        const { name, value } = event.target;
+        const { emailAddress,password } = this.state;
+        this.setState({ 
+            [name]: value
+        });
+        if (emailAddress.trim() && password.trim()) {
+            this.setState({ error:'' })
+        }
+    }
+
+    handleSubmit = async (event) => {
+        event.preventDefault();
+        const { emailAddress,password } = this.state;
+        if (emailAddress.trim() && password.trim()) {
+            this.setState({ error:'' })
+            await this.props.signIn(emailAddress, password);
+        }
+        else {
+            this.setState({error:'*Enter both the fields'})
+        }
+    }
+
+    render() {
+
+        return <form onSubmit={this.handleSubmit}>
+                <div>
+                    <h1 className="loginTxt">Login</h1>
+                    <div>
+                        <span><i  className="far fa-user"></i></span>
+                        <input
+                            type="email"
+                            placeholder="Email Address"
+                            name="emailAddress"
+                            value={this.state.emailAddress}
+                            onChange={this.handleChange}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <span><i className="fas fa-lock"></i></span>
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            name="password"
+                            value={this.state.password}
+                            onChange={this.handleChange}
+                            required />
+                    </div>
+                    <button type="submit">
+                        Login
+                    </button>
+                    {this.state.error}
+                </div>
+            </form>
+                
+    }
+}
+
+function mapStateToProps(state) {
+    const { users } = state;
+    return {
+        users,
+    };
+}
+
+export default connect(mapStateToProps, {...actions})(SignIn);
