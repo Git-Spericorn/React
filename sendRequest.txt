@@ -1,0 +1,99 @@
+import React, { Fragment } from "react";
+import { connect } from 'react-redux';
+import actions from '../action';
+import AsyncSelect from 'react-select/lib/Async';
+
+
+class sendRequest extends React.Component {
+
+    state = {
+        petId: '',
+        breedName: '',
+        location: '',
+        amount: '',
+        successMessage: false
+    }
+
+    componentDidMount = () => {
+        this.props.getPets();
+    }
+
+    promiseOptions = async val => {
+        this.props.getPets({ searchQuery: val });
+        const { petsArray } = this.props.petReducer;
+        return petsArray.filter(i => i.label.toLowerCase().includes(val.toLowerCase()));
+    };
+
+    handleChange = (e) => {
+        const { name, value } = e.target
+        this.setState({
+            [name]: value,
+        })
+    }
+
+    handlePetData = (value) => {
+        let petId = !value ? "" : value.value;
+        this.setState({
+            petId : petId
+        })
+    }
+
+    handleSendButton = async (e) => {
+        const { petId, breedName, location, amount } = this.state;
+        let req = '';
+        req = {
+            petId: petId ? petId : null,
+            breedName: breedName ? breedName : null,
+            location: location ? location : null,
+            amount: amount ? amount : null,
+        }
+        await this.props.sendPetRequest(req);
+        if (this.props.petReducer.sentSuccess) {
+            this.setState({ successMessage: true })
+        }
+    }
+
+    render() {
+        const { petReducer: { petsArray } } = this.props;
+        const { successMessage } = this.state;
+        return <React.Fragment>
+            <div>
+                <label for="">Pets</label>
+                <AsyncSelect
+                    ref="tags"
+                    cacheOptions
+                    defaultOptions={petsArray}
+                    loadOptions={promiseOptions}
+                    name="petId"
+                    onChange={e => handlePetData(e)}
+                />
+            </div>
+            <div>
+                <label for="">Breed</label>
+                <input type="text" className="form-control" name="industry" placeholder="Enter Breed" onChange={(e) => this.handleChange(e)} />
+            </div>
+            <div>
+                <label for="">Location</label>
+                <input type="text" className="form-control" name="location" placeholder="Enter location" onChange={(e) => this.handleChange(e)} />
+            </div>
+            <div>
+                <label for="">Amount</label>
+                <input type="text" className='form-control' name="amount" placeholder="$ 0000" onChange={(e) => this.handleChange(e)} />
+            </div>
+            <div>
+                <button type="button" onClick={(e) => this.handleSendButton()}>SEND</button>
+            </div>
+            {successMessage &&
+                <span>Request sent successfully !!!</span>
+            }
+        </React.Fragment>
+    }
+
+}
+
+function mapStateToProps(state) {
+    const { petReducer } = state;
+    return { petReducer }
+}
+
+export default connect(mapStateToProps, { ...actions })(sendRequest);
